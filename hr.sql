@@ -1109,7 +1109,7 @@ DROP USER human2 CASCADE;
 --71. 
 -- human 계정이 소유하고 있는 데이터를 
 -- "human_exp.dmp"파일로 export하는 명령어를 작성하시오.
-exp userid=human/123456 file=c:\KS\sql\human_exp.dmp log=c:\KS\sql\human_exp.log 
+exp userid=human/123456 file=c:\KS\sql\sql_human\human_exp.dmp log=c:\KS\sql\sql_human\human_exp.log 
 
 -- 72. 
 -- ms_board 의 writer 속성을 number속성으로 변경
