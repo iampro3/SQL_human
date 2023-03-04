@@ -1022,11 +1022,11 @@ COMMENT ON COLUMN MS_REPLY.UPD_DATE IS '수정일자';
 -- system 계정 또는 가져올 계정으로 접속하여 명령어를 실행해야 한다.
 -- import 명령 : imp (cmd에서 실행.)
 
-/*
+/*   -- 자신의 컴퓨터 로컬의 저장 위치를 입력하면 된다.
 human 에서 만든 파일이다.
-imp userid=system/123456 file=c:\KS\sql\community.dmp fromuser=human touser=human 
+imp userid=system/123456 file=c:\KS\sql\SQL_human\community.dmp fromuser=human touser=human  
 
-imp userid=system/123456 file=c:\KS\sql\human.dmp fromuser=human touser=human 
+imp userid=system/123456 file=c:\KS\sql\SQL_human\human.dmp fromuser=human touser=human2 
 */
 
 -- human 계정 생성
@@ -1053,9 +1053,10 @@ ALTER USER human2 QUOTA UNLIMITED ON users;
 GRANT DBA TO human2;
 
 -- 1. 하기 명령 을 cmd 에 입력한다
+-- revoke -> alter set ~ 실행 -> drop 실행 -> database에서 human 삭제. -> human 2 생성 코드 실행 -> cmd 에 imp명령 실행 -> 
 
 /*
-imp userid=system/123456 file=c:\KS\sql\SQL_human\community.dmp fromuser=human touser=human 츠
+imp userid=system/123456 file=c:\KS\sql\SQL_human\community.dmp fromuser=human touser=human 
 */
 -- import 중이라고 나온다.
 -- 2. 하기 명령 을 cmd 에 입력한다.
@@ -1074,6 +1075,21 @@ imp userid=system/123456 file=c:\KS\sql\SQL_human\human.dmp fromuser=human touse
 REVOKE DBA from human;
 REVOKE DBA from human2;
 
+-- revoke 후에, 다음 메시지가 뜬다면 --- ORA-01922: CASCADE must be specified to drop 'HUMAN2'
+-- 다음을 순서대로 실행해야 한다.
+-- 1. ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE;
+-- 2. DROP USER human2 CASCADE; 
+/*
+SQL> DROP USER human2;
+
+DROP USER human2
+*
+ERROR at line 1086:
+ORA-01922: CASCADE must be specified to drop 'HUMAN2'
+SQL> DROP USER human2 CASCADE;
+
+USER dropped.
+*/
 
 -- cmd 에서 문제생기면 계정 삭제하고 다시 시작하기
 -- DATABASE에서 HUMAN/HUMAN2 접속 모두 끊고, system.orcl로 설정 후 실행하고, 
