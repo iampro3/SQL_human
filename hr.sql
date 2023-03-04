@@ -1076,7 +1076,8 @@ REVOKE DBA from human2;
 
 
 -- cmd 에서 문제생기면 계정 삭제하고 다시 시작하기
--- 접속 모두 끊고, system.orcl로 설정 후 실행
+-- DATABASE에서 HUMAN/HUMAN2 접속 모두 끊고, system.orcl로 설정 후 실행하고, 
+-- 안 되면 DATABASE에서 우클릭->DELETE하고 다시 실행하면 된다.
 -- 2.계정 삭제 및 생성 시, 세션 속성 true로 변경 후 진행.
 -- ORA-28014: cannot drop administrative user or role 오류가 뜨면 아래 명령 실행해라.
 ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE;
