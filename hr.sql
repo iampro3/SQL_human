@@ -1055,12 +1055,12 @@ GRANT DBA TO human2;
 -- 1. 하기 명령 을 cmd 에 입력한다
 
 /*
-imp userid=system/123456 file=c:\KS\sql\community.dmp fromuser=human touser=human 
+imp userid=system/123456 file=c:\KS\sql\SQL_human\community.dmp fromuser=human touser=human 츠
 */
 -- import 중이라고 나온다.
 -- 2. 하기 명령 을 cmd 에 입력한다.
 /*
-imp userid=system/123456 file=c:\KS\sql\human.dmp fromuser=human touser=human2 
+imp userid=system/123456 file=c:\KS\sql\SQL_human\human.dmp fromuser=human touser=human2 
 */
 -- import 중이라고 나온다.
 -- system 권한이 없다고 나온다.
