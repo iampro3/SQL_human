@@ -1223,5 +1223,5 @@ SELETE * FROM MS_REPLY;
 
 -- -> 현재 스키마의 모든 테이블 목록을 검색
 -- -> GIT 연결
--- -> 연결 다시하기
+-- -> 연결 다시하기 - SQL_human --
 SELECT * FROM TAB;
