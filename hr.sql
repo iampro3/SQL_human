@@ -1363,6 +1363,28 @@ FROM employee e;
 -- 실행순서
 -- FROM -- WHERE - GROUP BY - HAVING - SELECT - ORDER BY
 
+-- join 
+
+-- (INNER : 생략가능) JOIN : 실행 안 됨
+SELECT e.emp_id 사원번호
+      ,e.emp_name 직원명
+      ,d.dept_title 부서명
+      ,j.job_name 직급명
+FROM employee e
+    INNER JOIN department d ON e.dept_code = d.dept_id
+    INNER JOIN job j ON e.job_code = j.job_code
+;
+
+-- equi join
+SELECT e.emp_id 사원번호
+      ,e.emp_name 직원명
+      ,d.dept_title 부서명
+      ,j.job_name 직급명
+FROM employee e, department d, job j
+WHERE e.dept_code = d.dept_id
+  AND e.job_code = j.job_code
+;
+
 -- 82. 실행안됨
 -- 출력결과를 참고하여,
 -- 인라인 뷰를 이용해 부서별로 최고급여를 받는 직원을 조회하시오.
@@ -1550,6 +1572,11 @@ FROM employee e
 -- EMPLOYEE와 DEPARTMENT 테이블 조인하여 출력,
 -- 직원없는 부서도 포함하여 출력하라
 -- NULL : 직원 없는 부서 - D3,D4,D7
+
+-- NVL : (컬럼값, 대체값):해당 값이 null 이면 지정된 값으로 변환하는 함수
+-- NULL - 0으로 조회,
+-- NVL(c_pct, 0) ㅣ null 이 0일 경우
+
 SELECT NVL(e.emp_id, '(없음)')사원번호
        ,NVL(e.emp_name, '(없음)')사원명
        ,NVL(d.dept_id, '(없음)')부서번호
@@ -1563,4 +1590,120 @@ FROM employee
 ORDER BY dept_code;
 
 -- 90.
--- 
+-- 직원 및 부서 유무에 상관없이 출력하는 sql문을 작성하라
+
+SELECT NVL( e.emp_id, '(없음)') 사원번호
+      ,NVL( e.emp_name, '(없음)') 직원명
+      ,NVL( d.dept_id, '(없음)') 부서번호
+      ,NVL( d.dept_title, '(없음)') 부서명
+FROM employee e
+     FULL JOIN department d ON(e.dept_code=d.dept_id) ;
+     
+-- 91.
+-- 사원번호, 직원명, 부서번호, 지역명, 국가명, 급여, 입사일자를 출력
+
+SELECT e.emp_id 사원번호
+      ,e.emp_name 직원명  
+      ,d.dept_id 부서번호
+      ,d.dept_title 부서명
+      ,l.local_name 지역명
+      ,n.national_name 국가명   
+      ,e.salary 급여
+      ,e.hire_date 입사일자
+FROM employee e
+    LEFT JOIN department d ON e.dept_code = d.dept_id
+    LEFT JOIN location l ON d.location_id = l.local_code
+    LEFT JOIN national n ON l.national_code = n.national_code
+-- LEFT JOIN national n USING (national_code) 위와 동일한 코드이다.
+;    
+
+-- USING : 조인하고자 하는 두 테이블의 컬럼이 동일하면 
+-- 함축해서 사용할 수 있다.
+-- LEFT JOIN national n USING (national_code)
+ 
+-- manager 사원만 사원명/직원명/부서명/직급/ 구분을 출력해라, manager_id 컬럼 사용
+-- manager_id가 없으면 대표다.
+-- manager_id가 있으면 상사가 있다.
+
+-- 1단계
+-- manager id컬럼이 NULL이 아닌 사원을 중복없이 조회
+-- 매니저들의 사원 번호 - 사원들의 ID가 된다.
+SELECT *
+FROM employee
+WHERE manager_id IS NOT NULL;
+
+-- 2단계
+-- employee, department, job 테이블을 조인하여 조합
+SELECT e.emp_id 사원번호
+      ,e.emp_name 사원명
+      ,d.dept_title 부서명
+      ,j.job_name 직급      
+      ,'매니저' 구분
+FROM employee e
+     LEFT JOIN department d ON e.dept_code = d.dept_id 
+          JOIN job j USING(job_code)
+     ;
+-- 3단계
+-- 조인 결과 중 emp_id 가 매니저인 사원번호인 경우만을 조회
+SELECT e.emp_id 사원번호
+      ,e.emp_name 사원명
+      ,d.dept_title 부서명
+      ,j.job_name 직급      
+      ,'매니저' 구분
+FROM employee e
+     LEFT JOIN department d ON e.dept_code = d.dept_id
+     JOIN job j USING(job_code)
+WHERE emp_id IN (
+                 SELECT DISTINCT manager_id
+                 FROM employee
+                 WHERE manager_id IS NOT NULL
+                 )
+ORDER BY emp_id
+;
+
+-- 93. 
+-- 사원만 조회하라.
+SELECT e.emp_id 사원번호
+      ,e.emp_name 사원명
+      ,d.dept_title 부서명
+      ,j.job_name 직급      
+      ,'사원' 구분
+FROM employee e
+     LEFT JOIN department d ON e.dept_code = d.dept_id
+     JOIN job j USING(job_code)
+WHERE emp_id NOT IN (
+                 SELECT DISTINCT manager_id
+                 FROM employee
+                 WHERE manager_id IS NOT NULL
+                 )
+ORDER BY emp_id
+;
+
+SELECT e.emp_id 사원번호
+      ,e.emp_name 사원명
+      ,d.dept_title 부서명
+      ,j.job_name 직급      
+      ,'매니저' 구분
+FROM employee e
+     LEFT JOIN department d ON e.dept_code = d.dept_id
+     JOIN job j USING(job_code)
+WHERE emp_id IN (
+                 SELECT DISTINCT manager_id
+                 FROM employee
+                 WHERE manager_id IS NOT NULL
+                 )
+UNION
+SELECT e.emp_id 사원번호
+      ,e.emp_name 사원명
+      ,d.dept_title 부서명
+      ,j.job_name 직급      
+      ,'사원' 구분
+FROM employee e
+     LEFT JOIN department d ON e.dept_code = d.dept_id
+     JOIN job j USING(job_code)
+WHERE emp_id NOT IN (
+                 SELECT DISTINCT manager_id
+                 FROM employee
+                 WHERE manager_id IS NOT NULL
+                 )
+;
