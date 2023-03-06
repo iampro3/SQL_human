@@ -1241,3 +1241,326 @@ SELETE * FROM MS_REPLY;
 -- -> GIT 연결
 -- -> 연결 다시하기 - SQL_human --완료
 SELECT * FROM TAB;
+
+-- 79. 테이블의 속성을 삭제하라
+-- * MS-BOARD 테이블의 WRITER 속성
+-- * MS-FILE 테이블의 BOARD_NO 속성
+-- * MS_REPLY 테이블의 BOARD_NO 속성
+
+ALTER TABLE MS_BOARD DROP COLUMN WRITER;
+ALTER TABLE MS_FILE DROP COLUMN BOARD_NO;
+ALTER TABLE MS_REPLY DROP COLUMN BOARD_NO;
+
+-- 80. 
+-- 각 테이블에 속성을 추가한 뒤, 외래키로 지정하라
+-- 해당 외래키에 대해서 참조 테이블의 데이터를 삭제 시, 
+-- 연결된 속성의값도 삭제하는 옵션도 지정하라.
+
+-- 80.1
+-- MS_BOARD에 WRITER 속성 추가
+ALTER TABLE MS_BOARD ADD WRITER NUMBER NOT NULL;
+-- WRITER 속성을 외래키로 지정
+-- 참조 테이블 : MS_USER 참조 속성  : USER_NO
+-- 참조 테이블 데이터 삭제 시, 연쇄적으로 함께 삭제하는 옵션 지정
+ALTER TABLE MS_BOARD
+ADD CONSTRAINT MS_BOARD_WRITER_FK FOREIGN KEY (WRITER)
+REFERENCES MS_USER(USER_NO)
+ON DELETE CASCADE;
+
+-- 80.2
+-- MS_FILE에 BOARD_NO 속성 추가
+ALTER TABLE MS_FILE ADD BOARD_NO NUMBER NOT NULL;
+-- BOARD_NO 외래키로 지정
+-- 참조 테이블 : MS_BOARD 참조 속성  : BOARD_NO
+-- 참조 테이블 데이터 삭제 시, 연쇄적으로 함께 삭제하는 옵션 지정
+ALTER TABLE MS_FILE
+ADD CONSTRAINT MS_FILE_BOARD_NO_FK FOREIGN KEY (BOARD_NO)
+REFERENCES MS_BOARD(BOARD_NO)
+ON DELETE CASCADE;
+
+-- 80.3
+-- MS_REPLY에 BOARD_NO 속성 추가
+ALTER TABLE MS_REPLY ADD BOARD_NO NUMBER NOT NULL;
+-- BOARD_NO 속성을 외래키로 지정
+-- 참조 테이블 : MS_BOARD 참조 속성  : BOARD_NO
+-- 참조 테이블 데이터 삭제 시, 연쇄적으로 함께 삭제하는 옵션 지정
+ALTER TABLE MS_REPLY
+ADD CONSTRAINT MS_REPLY_BOARD_NO_FK FOREIGN KEY (BOARD_NO)
+REFERENCES MS_BOARD(BOARD_NO)
+ON DELETE CASCADE;
+
+-- 테이블 확인 명령어
+SELECT * FROM MS_USER;
+
+
+-- 추가 안 되었는데 코딩으로 입력하니 추가됨 - FILE_DATE 때문에 입력 안 되었음
+INSERT INTO MS_FILE
+            (file_no, file_name, file_data, reg_date, upd_date, board_no)
+VALUES
+            ( 1, '강아지.png', '123', sysdate, sysdate, 1);
+
+
+INSERT INTO MS_FILE
+            (file_no, file_name, file_data, reg_date, upd_date, board_no)
+VALUES
+            ( 2, '고양이.png', '123', sysdate, sysdate, 1);
+            commit;
+            
+DELETE FROM MS_USER WHERE USER_NO = 1;
+
+SELECT * FROM MS_USER;
+SELECT * FROM MS_BOARD;
+-- 실행해볼것
+SELECT * FROM MS_FILE;  
+SELECT * FROM MS_REPLY;
+
+-- 외래키 제약조건 정리
+ALTER TABLE 테이블 명
+ADD CONSTRAINT 제약조건 명 FOREIGN KEY(외래키 속성)
+REFERENCES 참조 테이블(참조 속성);
+-- 옵션
+-- * ON UPDATE      -- 참조 테이블 수정 시,
+--* CASCADE      :부모 데이터 수정 시, 자식 데이터도 삭제
+--* SET NULL      :부모 데이터 수정 시, 자식 데이터도 NULL,
+--* SET DEFAULT      :부모 데이터 수정 시, 자식 데이터 기본값으로,
+--* RESTRICT      :자식 테이블이 참조하고 있는 경우,부모 데이터 삭제 불가
+--* NO ACTION      :아무런 행위도 취하지 않는다.(기본값),
+
+--* ON DELETE       -- 참조 테이블 삭제 시,
+--* CASCADE      :부모 데이터 삭제 시, 자식 데이터도 삭제
+--* SET NULL      :부모 데이터 삭제 시, 자식 데이터도 NULL,
+--* SET DEFAULT      :부모 데이터 삭제 시, 자식 데이터 기본값으로,
+--* RESTRICT      :자식 테이블이 참조하고 있는 경우,부모 데이터 삭제 불가
+--* NO ACTION      :아무런 행위도 취하지 않는다.(기본값),
+
+
+-- ★ 서브쿼리
+/*
+        :SQL 문 내부에 사용하는 SELECT 문
+        * 메인쿼리 : 서브쿼리를 사용하는 최종적인 SELECT 문    
+
+        * 사용 위치에 따른 분류
+        - 스칼라 서브쿼리 : SELECT 절에 사용하는 서브 쿼리
+        - 인라인 뷰 : FROM 절에 사용하는 서브 쿼리
+        - 서브 쿼리 : WHERE 절에 사용하는 서브 쿼리
+*/
+
+-- 81. 70.번에 HUMAN2 계정이 추가되어 있어야 함
+-- human2에 접속하고 우측 선택에서 접속을 human2로 설정하기
+-- EMPLOYEE, DEPARTMENT, JOB 테이블을 사용하여 
+-- 스칼라 서브쿼리로 출력결과와 같이 조회하라
+SELECT * FROM employee;
+SELECT * FROM department;
+SELECT * FROM job;
+
+-- 스칼라 서브쿼리
+SELECT  emp_id AS 사원번호
+       ,emp_name AS 직원명
+        ,(SELECT dept_title FROM department d WHERE d.dept_id = e.dept_code) 부서명
+        ,(SELECT job_name FROM job j WHERE j.job_code = e.job_code) 직급명
+FROM employee e;        
+
+-- 실행순서
+-- FROM -- WHERE - GROUP BY - HAVING - SELECT - ORDER BY
+
+-- 82. 실행안됨
+-- 출력결과를 참고하여,
+-- 인라인 뷰를 이용해 부서별로 최고급여를 받는 직원을 조회하시오.
+
+SELECT e.emp_id 사원번호
+    ,e.emp_name 직원명
+    ,d.dept_title 부서명
+    ,e.salary 급여
+    ,t.max_sal 최고급여
+    ,t.min_sal 최저급여
+    ,ROUND(t.avg_sal, 2) 평균급여
+FROM employee e, department_d,
+    (SELECT DEPT_CODE           -- (~)로 묶어주고 (~) 내용을 t로 정의
+           ,MAX(salary) MAX_SAL
+           ,MIN(salary) MIN_SAL
+           ,AVG(salary) AVG_SAL
+    FROM employee
+    GROUP BY dept_code) t 
+WHERE e.dept_code = d.dept_id
+AND e.salary = t.max_sal;
+
+--83. 
+-- 서브쿼리를 이용하여,
+-- 직원명이 '이태림'인 사원과 같은 부서의 직원들을 조회하시오
+
+SELECT emp_id 사원번호
+        ,emp_name 직원명
+        ,email 이메일
+        ,phone 전화번호
+FROM employee
+WHERE dept_code = (SELECT dept_code
+                   FROM employee
+                   WHERE emp_name = '이태림'
+                   )
+;
+
+
+-- 84. 
+-- 사원 테이블의 존재하는 부서코드만 포함하는 부서를 조회하라
+-- 사원이 존재하는 부서만 조회하라
+-- 중복제거 DISTINCT
+
+SELECT dept_id 부서번호
+      ,dept_title 부서명
+      ,location_id 지역명
+FROM department
+WHERE dept_id IN (
+                    SELECT DISTINCT dept_code
+                    FROM employee
+                    WHERE dept_code IS NOT NULL
+                 )
+ORDER BY dept_id ASC
+;
+
+-- 2) EXISTS
+SELECT dept_id 부서번호
+      ,dept_title 부서명
+      ,location_id 지역명
+FROM department d
+WHERE EXISTS ( SELECT * FROM employee e WHERE e.dept_code = d.dept_id)
+ORDER BY d.dept_id;
+
+-- 85. 
+-- 사원 테이블의 존재하지 않는 부서코드만 포함하는 부서를 조회하라
+-- 사원이 존재하는 부서만 조회하라
+-- 중복제거 DISTINCT
+SELECT dept_id 부서번호
+      ,dept_title 부서명
+      ,location_id 지역명
+FROM department
+WHERE dept_id NOT IN (
+                    SELECT DISTINCT dept_code
+                    FROM employee
+                    WHERE dept_code IS NOT NULL
+                    )
+ORDER BY dept_id ASC
+;
+
+-- 2) EXISTS
+SELECT dept_id 부서번호
+      ,dept_title 부서명
+      ,location_id 지역명
+FROM department d
+WHERE NOT EXISTS ( SELECT * FROM employee e WHERE e.dept_code = d.dept_id)
+ORDER BY d.dept_id;
+
+-- 86. 
+-- EMPLOYEE 테이블의 DEPT-CODE 가 'D1' 인 부서의 최대급여보다
+-- 더 큰 급여를 받는 사원을 조회하시오.
+
+-- 1단계 - DEPT_CODE가 'D1' 인 부서의 최대급여
+SELECT MAX(salary)
+FROM employee
+WHERE dept_code = 'D1';
+
+-- 1) 2단계 -- 급여 > 최대 급여 큰 경우로 조회
+SELECT e.emp_id 사원번호
+      ,e.emp_name 직원명
+      ,d.dept_id 부서번호
+      ,d.dept_title 부서명
+      ,e.salary 급여
+FROM employee e
+     ,department d 
+WHERE e.dept_code = d.dept_id
+  AND e.salary > (SELECT MAX(salary)
+                    FROM employee
+                    WHERE dept_code = 'D1'
+                    )
+;                    
+
+-- 2)
+SELECT e.emp_id 사원번호
+      ,e.emp_name 직원명
+      ,d.dept_id 부서번호
+      ,d.dept_title 부서명
+      ,e.salary 급여
+FROM employee e
+    ,department d 
+WHERE e.dept_code = d.dept_id
+  AND e.salary > ALL(SELECT salary FROM employee WHERE dept_code = 'D1')                    
+;
+
+SELECT *
+FROM employee
+WHERE dept_code = 'D9';
+
+-- 87. 
+-- 테이블 EMPLOYEE 의 DEPT_CODE가 'D9'인 부서의 최저급여보다 더 큰 급여를 받늗
+-- 사원을 조회하는 SQL문을 작성하라.
+
+-- 1단계 - DEPT_CODE가 'D1' 인 부서의 최저급여
+SELECT MIN(salary)
+FROM employee
+WHERE dept_code = 'D1';
+
+-- 2단계 - 급여 > 최대급여 큰 경우로 조회
+SELECT e.emp_id 사원번호
+      ,e.emp_name 직원명
+      ,d.dept_id 부서번호
+      ,d.dept_title 부서명
+      ,e.salary 급여
+FROM employee e
+     ,department d 
+WHERE e.dept_code = d.dept_id
+  AND e.salary > (SELECT MIN(salary)
+                    FROM employee
+                    WHERE dept_code = 'D9'
+                    )
+;     
+
+-- 2)
+SELECT e.emp_id 사원번호
+      ,e.emp_name 직원명
+      ,d.dept_id 부서번호
+      ,d.dept_title 부서명
+      ,e.salary 급여
+FROM employee e
+    ,department d 
+WHERE e.dept_code = d.dept_id
+  AND e.salary > ANY(SELECT salary FROM employee WHERE dept_code = 'D9')                    
+;
+
+-- 88.
+-- EMPLOYEE 와 DEPARTMENT 테이블을 조인하여 출력하되,
+-- 부서가 없는 직원도 포함해 출력하라
+SELECT e.emp_id 사원번호
+      ,e.emp_name 직원명
+      ,d.dept_id 부서번호
+      ,d.dept_title 부서명
+FROM employee e
+     LEFT OUTER JOIN department d
+     ON(e.dept_code = d.dept_id);
+     
+-- 부서가 없는 직원 불포함해 출력하라-NULL을  '(없음)' 으로 출력하게 하라
+-- NULL : 부서 없는 직원 - 하동운, 이오리
+SELECT NVL(e.emp_id, '(없음)') 사원번호
+      ,NVL(e.emp_name, '(없음)') 사원명
+      ,NVL(d.dept_id, '(없음)') 부서번호
+      ,NVL(d.dept_title, '(없음)') 부서명
+FROM employee e
+     LEFT OUTER JOIN department d
+     ON( e.dept_code = dept_id );
+     
+-- 89. 
+-- EMPLOYEE와 DEPARTMENT 테이블 조인하여 출력,
+-- 직원없는 부서도 포함하여 출력하라
+-- NULL : 직원 없는 부서 - D3,D4,D7
+SELECT NVL(e.emp_id, '(없음)')사원번호
+       ,NVL(e.emp_name, '(없음)')사원명
+       ,NVL(d.dept_id, '(없음)')부서번호
+       ,NVL(d.dept_title, '(없음)')부서명
+FROM employee e
+     RIGHT JOIN department d
+     on(e.dept_code = d.dept_id);
+     
+SELECT DISTINCT dept_code
+FROM employee
+ORDER BY dept_code;
+
+-- 90.
+-- 
