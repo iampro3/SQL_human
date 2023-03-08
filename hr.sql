@@ -2135,3 +2135,343 @@ ORDER BY dept_code
 ;
 
 -- PIVOT
+-- 0309
+
+-- 11g 는 세션설정없이 바로 계정 생성 가능
+-- 12c 이후, 'c## 계정명'
+-- HUMAN_PRAC 계정 생성
+ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE;
+-- CREATE USER 계정명 IDENTIFIED BY 비밀번호;
+CREATE USER HUMAN_PRAC IDENTIFIED BY "123456";
+-- 계정이 사용할 수 있는 용량 설정(무한대)
+ALTER USER HUMAN_PRAC QUOTA UNLIMITED ON users;
+-- 계정에 권한 부여 : 원본 코드
+-- GRANT connect, resource TO human2;
+-- human2 계정에 DBA 권한 부여 : human 코드
+-- dba : 모든 권한을 가짐
+GRANT DBA TO HUMAN_PRAC;
+
+INSERT INTO HUMAN_PRAC( NO,NAME,REG_DATE,UPD_DATE )
+VALUES ('2303','브래드', sysdate, sysdate);
+
+COMMIT;
+
+DROP TABLE human_user;
+
+CREATE TABLE human_users(
+NO NUMBER NOT NULL PRIMARY KEY,
+name VARCHAR2(45)  DEFAULT '이름없음' NOT NULL,
+reg_date DATE       DEFAULT sysdate NOT NULL,
+upd_date DATE       DEFAULT sysdate NOT NULL
+);
+
+
+-- 7. 테이블에 5행의 임의의 데이터 추가하기 " 추가 안 되다가 갑자기 된다.
+-- 오류내역 : ORA-00001: 무결성 제약 조건(HUMAN_PRAC.SYS_C007981)에 위배됩니다
+INSERT INTO HUMAN_USERS( NO,NAME,REG_DATE,UPD_DATE )
+VALUES ('1','브래드', sysdate, sysdate);
+
+INSERT INTO HUMAN_USERS( NO,NAME,REG_DATE,UPD_DATE )
+VALUES ('2','앤지', sysdate, sysdate);
+
+INSERT INTO HUMAN_USERS( NO,NAME,REG_DATE,UPD_DATE )
+VALUES ('3','시에나', sysdate, sysdate);
+
+INSERT INTO HUMAN_USERS( NO,NAME,REG_DATE,UPD_DATE )
+VALUES ('4','방탄진', sysdate, sysdate);
+-- 기본값이 정해진 컬럼을 제외하고 작성 - 안 된다....
+-- > 컬럼명을 명시하지 않는 컬럼들은 기본값으로 추가됨
+INSERT INTO HUMAN_USERS( NO,NAME )
+VALUES ('1','브래드');
+
+-- 
+SELECT * FROM HUMAN_USERS;
+
+-- 8.'HUMAN_USER' 테이블의 3번째 데이터에서 'NAME'속성을 '김휴먼'으로 수정하기
+-- Uupd_date도 현재/날짜 시간으로 변경하기
+UPDATE human_user
+SET name ='브래드'
+,upd_date = sysdate
+WHERE no = 3;
+
+-- 9. 'HUMAN_USERS' 테이블에서 이름(NAME)이 김씨인 사람을 조회하기
+SELECT * 
+FROM human_users
+WHERE SUBSTR(name, 1,1) = '브';
+
+SELECT * FROM HUMAN_USERS
+WHERE name LIKE '브%';
+
+-- 10. 'human_user'테 이블의 'name' 속성이 '브래드'인 데이터 삭제하기
+DELETE FROM HUMAN_USERS
+WHERE name = '브래드';
+
+-- 11. 'human_user' 테이블의 모든 속성을 조회하기
+SELECT *
+FROM human_users;
+
+-- 12. 'human_drop' 계정 삭제
+
+-- 기본 오라클 설정 적용
+ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE;
+-- dba 권한을 가진 경우, 권한 해제 후 삭제
+
+REVOKE DBA FROM human_prac;
+DROP USER human_prac CASCADE;
+
+-----
+ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE;
+
+ALTER USER HUMAN_01 QUOTA UNLIMITED ON users;
+
+GRANT DBA TO HUMAN_01;
+
+CREATE TABLE HUMAN_USER(
+    NO NUMBER NOT NULL PRIMARY KEY,
+    NAME VARCHAR2(45) DEFAULT '이름없음' NOT NULL,
+    REG_DATE DATE DEFAULT sysdate NOT NULL,
+    UPD_DATE DATE DEFAULT sysdate NOT NULL
+);
+
+INSERT INTO HUMAN_USER(NO,NAME)
+VALUES('01', '디카프리오')
+;
+
+--------------------------- 연습
+
+-- 
+SELECT dept_code, job_code
+    ,LISTAGG(emp_name, ', ')
+     WITHIN GROUP(ORDER BY salary DESC) "부서별 사원목록"
+    ,MAX(salary) 최대급여
+FROM employee
+GROUP BY dept_code, job_code
+ORDER BY dept_code, job_code;
+
+-- PIVOT 함수를 이용해서 직급은 행에
+-- 부서는 열에 그룹화하여 최고급여를 출력하라
+-- 직급은 다 있지만 부서는 없는 사원들이 있다.
+SELECT *
+FROM (
+    SELECT dept_code, job_code, salary
+    FROM employee    
+    )
+    PIVOT(
+        MAX(salary)
+        --컬럼으로 올릴 속성들
+        FOR dept_code IN('D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9')
+    )
+    ORDER BY job_code;
+
+-- 행과 열을 반대로    
+-- 직급은 열에 그룹화하여 최고급여를 출력하라.
+    
+SELECT *
+FROM (
+    SELECT dept_code, job_code, salary
+    FROM employee    
+    )
+    PIVOT(
+        MAX(salary)
+        --컬럼으로 올릴 속성들
+        FOR job_code IN('J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7')
+    )
+    ORDER BY dept_code;
+    
+    
+-- UNPIVOT (열-> 행)    
+-- 그룹화된 결과인 열을 행 데이터로 바꿔 출력하는 함수
+SELECT *
+FROM(
+        SELECT dept_code
+                ,MAX(DECODE(job_code, 'J1', salary)) J1 -- "대표 최대급여"
+                ,MAX(DECODE(job_code, 'J2', salary)) J2 -- "부사장 최대급여"
+                ,MAX(DECODE(job_code, 'J3', salary)) J3 -- "부장 최대급여"
+                ,MAX(DECODE(job_code, 'J4', salary)) J4 -- "차장 최대급여"
+                ,MAX(DECODE(job_code, 'J5', salary)) J5 -- "과장 최대급여"
+                ,MAX(DECODE(job_code, 'J6', salary)) J6 -- "대리 최대급여"
+                ,MAX(DECODE(job_code, 'J7', salary)) J7 -- "사원 최대급여"
+
+        FROM employee
+        GROUP BY dept_code
+        ORDER BY dept_code
+)
+    UNPIVOT(
+           salary
+           FOR job_code IN (J1,J2,J3,J4,J5,J6,J7)
+           )
+;
+
+-- 내부 조인
+-- 동등 조인
+-- : 등호(=) 연산자를 사용하여 2개 이상의 테이블을 조합하여 조회하는 방식
+SELECT e.emp_name, d.dept_title, e.salary
+FROM employee e
+    ,department d
+WHERE e.dept_code = d.dept_id;    
+
+-- INNER JOIN (동등조인과 대응)    
+SELECT e.emp_name, d.dept_title, e.salary
+    FROM employee e
+        INNER JOIN department d ON (e.dept_code = d.dept_id)
+;        
+    
+-- 세미조인
+-- : 서브쿼리에 존재하는 데이터만 메인 쿼리에서 추출하여 출력하는 방식
+-- IN 또는 EXISTS 연산자를 사용한 조인
+-- 급여가 300000이상인 부서를 출력하라
+SELECT * 
+FROM department d
+WHERE EXISTS ( -- 이하 서브쿼리
+                SELECT *
+                FROM employee e
+                WHERE e.dept_code = d.dept_id
+                AND salary >= 3000000
+            )
+            ;
+            
+        SELECT *
+        FROM department d
+        WHERE dept_id IN(
+                        SELECT dept_code
+                        FROM employee e
+                        WHERE e.dept_code = d.dept_id
+                        AND salary >= 3000000
+        )
+;
+        
+-- 안티조인
+-- 서브쿼리에 존재하는 데이터만 제외하고 
+-- 메인 쿼리에서 추출하여 조회하는 방식
+
+SELECT * 
+FROM department d
+WHERE NOT EXISTS (
+                SELECT *
+                FROM employee e
+                WHERE e.dept_code = d.dept_id
+                AND salary >= 3000000
+            )
+            ;
+            
+        SELECT *
+        FROM department d
+        WHERE dept_id NOT IN(
+                        SELECT dept_code
+                        FROM employee e
+                        WHERE e.dept_code = d.dept_id
+                        AND salary >= 3000000
+        )
+;
+
+-- 셀프조인
+-- 동일한 하나의 테이블을 2번 이상 조합하여 출력하는 방식
+-- 같은 부서의 사원에 대한 매니저를 출력하시오
+SELECT b.emp_id 사원번호
+      ,b.emp_name 사원명
+      ,a.emp_name 매니저명
+FROM employee a,
+     employee b
+WHERE a.emp_id = b.manager_id
+AND a.dept_code = b.dept_code
+;
+
+-- 외부조인(OUTER JOIN) 
+-- LEFT OUTER JOIN
+-- 왼쪽 테이블을 먼저 읽어들인 후, 
+-- 조인 조건에 일치하는 오른쪽 테이블도 함꼐 조회하는 것
+-- * 조건에 불일치하는 오른쪽 테이블은 NULL로 조회된다.
+
+-- 1) ansi 조인
+SELECT e.emp_id
+      ,e.emp_name
+      ,d.dept_id
+      ,d.dept_title
+FROM employee e LEFT OUTER JOIN department d
+                     ON e.dept_code = d.dept_id    
+;
+
+-- 2) 기존 조인
+-- 조인 조건에서 데이터가 없는 테이블의 커럼에 (+) 기호를 붙여준다.
+-- 우측이 null 이다
+-- inner 조인은 결합조건이 적합해야만 결과가 출력된다.
+SELECT e.emp_id
+       ,e.emp_name
+       ,d.dept_id
+       ,d.dept_title
+FROM employee e
+     ,department d
+WHERE e.dept_code = d.dept_id (+);
+
+-- RIGHT OUTER JOIN
+-- 오른쪽 테이블을 먼저 읽어들인 후,
+-- 조인 조건에 일치하는 왼쪽 테이블을 함께 조회하는 것
+-- * 조인 조건에 불일치 하는 왼쪽 테이블 데이터는 null이 된다.
+
+-- 1) ansi 조인
+SELECT e.emp_id
+      ,e.emp_name
+      ,d.dept_id
+      ,d.dept_title
+FROM employee e RIGHT OUTER JOIN department d
+                ON e.dept_code = d.dept_id    
+;
+
+-- 2) 기존 조인
+-- 조인 조건에서 데이터가 없는 테이블의 커럼에 (+) 기호를 붙여준다.
+-- WHERE A.공통컬럼(+) = B.공통컬럼;
+SELECT e.emp_id
+       ,e.emp_name
+       ,d.dept_id
+       ,d.dept_title
+FROM employee e
+     ,department d
+WHERE e.dept_code(+) = d.dept_id ;
+
+-- FULL OUTER JOIN
+-- - 조인 조건에 일치하는 왼쪽 테이블과 오른쪽 테이블의 교집합이 되는 데이터
+-- - 조인 조건에 일치하지 않는 왼쪽 테이블 데이터(오른쪽 테이블 데이터 null) 
+-- - 조인 조건에 일치하지 않는 오른쪽 테이블 데이터(왼쪽 테이블 데이터 null) 
+
+-- 1) ansi 조인만 있다.
+SELECT e.emp_id
+      ,e.emp_name
+      ,d.dept_id
+      ,d.dept_title
+FROM employee e FULL OUTER JOIN department d
+             ON e.dept_code = d.dept_id;
+             
+SELECT e.emp_id
+      ,e.emp_name
+      ,d.dept_id
+      ,d.dept_title
+FROM employee e
+      ,department d
+WHERE e.dept-code(+) = d.dept_id(+); -- 불가능
+
+-- INNER JOIN
+-- 위에 정리
+-- ANSI 조인 (JOIN 키워드)
+
+-- 카테시안 조인
+-- 하나의 테이블 A와 다른 하나의 테이블 B의 모든 행을 조회하는 방식
+-- (A 행의 수) x (B 행의 수) 
+SELECT *
+FROM employee e
+    ,department d
+    ;
+    
+SELECT ROWNUM -- 행 번호 출력하는 명령
+    ,e.*
+    ,d.*
+FROM employee e
+    ,department d;
+    
+-- cross 조인
+-- 카테시안 조인을 ansi 문법으로 사용한 조회
+SELECT *
+FROM employee e
+    CROSS JOIN department d;
+    
+-- 60 번까지 공부하기.
+
