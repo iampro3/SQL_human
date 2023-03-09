@@ -2475,3 +2475,51 @@ FROM employee e
     
 -- 60 번까지 공부하기.
 
+-- **** 계정 새로 생성할 때, 최종정리 ****************8
+-- 1. system 계정으로 접속한다.
+-- 2. 아래 4줄, grant까지 입력한다.
+-- 3. '+'버튼을 눌러서 새 접속을 만든다.
+-- 4. human_prac 사용자 이름 추가 -> 123456 비번 입력 -> 저장 -> 테스트 -> 접속 후, 새로고침한다
+-- human_pract를 접속하고 테이블 생성한다 -> 테이블 컬럼에 항목들 추가한다.
+
+-- 11g 는 세션설정없이 바로 계정 생성 가능
+-- 12c 이후, 'c## 계정명'
+-- HUMAN_PRAC 계정 생성
+ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE;
+-- CREATE USER 계정명 IDENTIFIED BY 비밀번호;
+CREATE USER HUMAN_USER IDENTIFIED BY "123456";
+-- 계정이 사용할 수 있는 용량 설정(무한대)
+ALTER USER HUMAN_USER QUOTA UNLIMITED ON users;
+-- 계정에 권한 부여 : 원본 코드
+-- GRANT connect, resource TO human2;
+-- human2 계정에 DBA 권한 부여 : human 코드
+-- dba : 모든 권한을 가짐
+GRANT DBA TO HUMAN_USER;
+
+INSERT INTO HUMAN_USER( NO,NAME,REG_DATE,UPD_DATE )
+VALUES ('2303','브래드', sysdate, sysdate);
+
+COMMIT;
+-- 테이블 삭제 방법
+DROP TABLE human_user;
+
+-- ****** 계정삭제 방법
+-- system 접속 ->아래 코드 3줄 차례대로 실행하고 좌측 접속목록에서 삭제한다.
+-- 기본 오라클 설정 적용
+ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE;
+-- dba 권한을 가진 경우, 권한 해제 후 삭제
+REVOKE DBA FROM human_01;
+DROP user human_01 cascade;
+
+CREATE TABLE human_USER(
+NO NUMBER NOT NULL PRIMARY KEY,
+name VARCHAR2(45)  DEFAULT '이름없음' NOT NULL,
+reg_date DATE       DEFAULT sysdate NOT NULL,
+upd_date DATE       DEFAULT sysdate NOT NULL
+);
+
+
+-- 7. 테이블에 5행의 임의의 데이터 추가하기 " 추가 안 되다가 갑자기 된다.
+-- 오류내역 : ORA-00001: 무결성 제약 조건(HUMAN_PRAC.SYS_C007981)에 위배됩니다
+INSERT INTO HUMAN_PRAC( NO,NAME,REG_DATE,UPD_DATE )
+VALUES ('1','브래드', sysdate, sysdate);
