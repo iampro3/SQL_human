@@ -2523,3 +2523,80 @@ upd_date DATE       DEFAULT sysdate NOT NULL
 -- 오류내역 : ORA-00001: 무결성 제약 조건(HUMAN_PRAC.SYS_C007981)에 위배됩니다
 INSERT INTO HUMAN_PRAC( NO,NAME,REG_DATE,UPD_DATE )
 VALUES ('1','브래드', sysdate, sysdate);
+
+
+-------------------------------------
+-- exam
+
+
+-- human 계정 생성
+-- 미리 system 계정으로 sql developer 에서 변경하고 오기
+ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE;
+-- CREATE USER 계정명 IDENTIFIED BY 비밀번호;
+CREATE USER human_exam IDENTIFIED BY "123456";
+-- 계정이 사용할 수 있는 용량 설정(무한대)
+ALTER USER human_exam QUOTA UNLIMITED ON users;
+-- 계정에 권한 부여 : 원본크드
+--GRANT connect, resource TO human;
+-- human 계정에 DBA 권한 부여
+GRANT DBA TO human_exam;
+
+-- 테이블 정의
+CREATE TABLE human_exam 
+(
+      BOARD_NO NUMBER NOT NULL PRIMARY KEY
+    , TITLE VARCHAR2(100) NOT NULL 
+    , CONTENT VARCHAR2(2000) NOT NULL  
+    , WRITER VARCHAR2(20) NOT NULL UNIQUE
+    , REG_DATE DATE DEFAULT sysdate NOT NULL 
+    , UPD_DATE DATE DEFAULT sysdate NOT NULL    
+);
+
+
+/* COMMENT ON COLUMN MS_STUDENT.BIRTH IS '생년월일'; */
+
+
+
+-- 속성 추가
+-- -- ALTER TABLE MS_STUDENT ADD STATUS VARCHAR2(10) DEFAULT '대기' NOT NULL;
+COMMENT ON COLUMN MS_STUDENT.STATUS IS '재적';
+
+INSERT INTO HUMAN_EXAM ( BOARD_NO,TITLE,CONTENT,WRITER,REG_DATE,UPD_DATE )
+VALUES ( '1','제목01','내용01','김휴먼','2022/12/27','2022/12/27' );
+
+
+INSERT INTO HUMAN_EXAM ( BOARD_NO,TITLE,CONTENT,WRITER,REG_DATE,UPD_DATE )
+VALUES ( '2','제목02','내용02','김휴먼2','2022/12/27','2022/12/27' );
+
+-- 시퀀스 생성
+-- 99. 
+-- 시퀀스를 생성하시오
+-- SEQ_MS_USER
+-- SEQ_MS_BOARD
+-- SEQ_MS_FILE
+-- SEQ_MS_REPLY
+-- 시작 : 1 증가값:1,최솟값:1최댓값:100000
+-- 시퀀스 생성
+
+CREATE SEQUENCE SEQ_BOARD
+INCREMENT BY 1
+START WITH 1
+MINVALUE 1
+MAXVALUE 100000
+;
+
+
+-- 데이터 수정
+UPDATE HUMAN_EXAM
+SET TITLE = '수정01','수정02';
+
+UPDATE HUMAN_EXAM
+SET CONTENT = '수정01','수정02';
+
+-- 테이블 데이터 삭제하기
+DELETE FROM HUMAN_EXAM
+WHERE WRITER = '김휴먼';
+
+-- 이름이 '김휴먼' 게시글 삭제
+DELETE HUMAN_EXAM
+WHERE WRITER LIKE '김휴먼2';
