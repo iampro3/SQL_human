@@ -1045,6 +1045,8 @@ human 에서 만든 파일이다.
 imp userid=system/123456 file=c:\KS\sql\SQL_human\community.dmp fromuser=human touser=human  
 
 imp userid=system/123456 file=c:\KS\sql\SQL_human\human.dmp fromuser=human touser=human2 
+
+imp userid=system/123456 file=c:\KS\sql\sql\sql_human\human.dmp fromuser=human touser=human2 
 */
 
 -- human 계정 생성
@@ -1078,7 +1080,9 @@ imp userid=system/123456 file=c:\KS\sql\SQL_human\community.dmp fromuser=human t
 */
 -- import 중이라고 나온다.
 -- 2. 하기 명령 을 cmd 에 입력한다.
-/*
+/* : 0310 학원에서 폴더생성하고 human 계정 삭제하고 생성함
+imp userid=system/123456 file=c:\KS\sql\sql\SQL_human\community.dmp fromuser=human touser=human 
+
 imp userid=system/123456 file=c:\KS\sql\SQL_human\human.dmp fromuser=human touser=human2 
 */
 -- import 중이라고 나온다.
@@ -1126,8 +1130,8 @@ DROP USER human2 CASCADE;
 
 --71. 
 -- human 계정이 소유하고 있는 데이터를 
--- "human_exp.dmp"파일로 export하는 명령어를 작성하시오.
-exp userid=human/123456 file=c:\KS\sql\sql_human\human_exp.dmp log=c:\KS\sql\sql_human\human_exp.log 
+-- "human_exp.dmp"파일로 export하는 명령어를 작성하시오. 
+exp userid=human/123456 file=c:\KS\sql\sql\sql_human\human_exp.dmp log=c:\KS\sql\sql\sql_human\human_exp.log 
 
 -- 72. 
 -- ms_board 의 writer 속성을 number속성으로 변경
@@ -1308,7 +1312,7 @@ REFERENCES MS_BOARD(BOARD_NO)
 ON DELETE CASCADE;
 
 -- 테이블 확인 명령어
-SELECT * FROM MS_USER;
+SELECT * FROM MS_board;
 
 
 -- 추가 안 되었는데 코딩으로 입력하니 추가됨 - FILE_DATE 때문에 입력 안 되었음
@@ -2518,16 +2522,13 @@ reg_date DATE       DEFAULT sysdate NOT NULL,
 upd_date DATE       DEFAULT sysdate NOT NULL
 );
 
-
 -- 7. 테이블에 5행의 임의의 데이터 추가하기 " 추가 안 되다가 갑자기 된다.
 -- 오류내역 : ORA-00001: 무결성 제약 조건(HUMAN_PRAC.SYS_C007981)에 위배됩니다
 INSERT INTO HUMAN_PRAC( NO,NAME,REG_DATE,UPD_DATE )
 VALUES ('1','브래드', sysdate, sysdate);
 
-
 -------------------------------------
--- exam
-
+-- exam 0310 SQL TEST
 
 -- human 계정 생성
 -- 미리 system 계정으로 sql developer 에서 변경하고 오기
@@ -2536,10 +2537,19 @@ ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE;
 CREATE USER human_exam IDENTIFIED BY "123456";
 -- 계정이 사용할 수 있는 용량 설정(무한대)
 ALTER USER human_exam QUOTA UNLIMITED ON users;
+-- 테이블 스페이스 변경
+ALTER USER human_exam; 
+
 -- 계정에 권한 부여 : 원본크드
---GRANT connect, resource TO human;
+-- 계정에 CONNECT, RESOURCE 권한 주기
+GRANT connect, resource TO human_exam;
+
+-- GRANT connect, resource TO human_exam;
 -- human 계정에 DBA 권한 부여
 GRANT DBA TO human_exam;
+
+-- 테이블에 connect와 resource 에 권한 주기
+GRANT connect, resource, dba TO [user_name];
 
 -- 테이블 정의
 CREATE TABLE human_exam 
@@ -2552,10 +2562,7 @@ CREATE TABLE human_exam
     , UPD_DATE DATE DEFAULT sysdate NOT NULL    
 );
 
-
 /* COMMENT ON COLUMN MS_STUDENT.BIRTH IS '생년월일'; */
-
-
 
 -- 속성 추가
 -- -- ALTER TABLE MS_STUDENT ADD STATUS VARCHAR2(10) DEFAULT '대기' NOT NULL;
@@ -2563,7 +2570,6 @@ COMMENT ON COLUMN MS_STUDENT.STATUS IS '재적';
 
 INSERT INTO HUMAN_EXAM ( BOARD_NO,TITLE,CONTENT,WRITER,REG_DATE,UPD_DATE )
 VALUES ( '1','제목01','내용01','김휴먼','2022/12/27','2022/12/27' );
-
 
 INSERT INTO HUMAN_EXAM ( BOARD_NO,TITLE,CONTENT,WRITER,REG_DATE,UPD_DATE )
 VALUES ( '2','제목02','내용02','김휴먼2','2022/12/27','2022/12/27' );
@@ -2585,7 +2591,6 @@ MINVALUE 1
 MAXVALUE 100000
 ;
 
-
 -- 데이터 수정
 UPDATE HUMAN_EXAM
 SET TITLE = '수정01','수정02';
@@ -2595,8 +2600,10 @@ SET CONTENT = '수정01','수정02';
 
 -- 테이블 데이터 삭제하기
 DELETE FROM HUMAN_EXAM
-WHERE WRITER = '김휴먼';
+;
 
 -- 이름이 '김휴먼' 게시글 삭제
 DELETE HUMAN_EXAM
-WHERE WRITER LIKE '김휴먼2';
+WHERE WRITER LIKE '김휴먼';
+
+-- 0310 테스트 마감
