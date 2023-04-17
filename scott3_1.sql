@@ -194,5 +194,45 @@ select *
 from emp e1
 left outer join emp2 e2 on(e1.mgr = e2.empno);
 
--- 커밋
+-- ****************** 매우 중요 ********************
+-- 댓글 트리 구조 무한정 생성 가능 tree구조로 깊이를 구축 가능
+-- 댓글 1개 ~ 댓글 무한 루프 가능 : 재귀호출 사용함
+select e1.empno, e1.ename, e2.empno, e2.ename, e3.empno, e3.ename
+from emp e1
+left outer join emp2 e2 on(e1.mgr = e2.empno)
+left outer join emp e3 on(e2.mgr = e3.empno)
+where e1.empno = 7654;
+
+-- 재귀호출
+--with as lower select * from emp where sal < 2000;
+
+-- insert
+insert into 테이블명(컬럼명,컬럼명)
+values(1,'이름')
+
+
+-- update, delete
+-- ** where 필수!!!! **, select 에서 테스트해 보기
+-- select에서 검증된 where를 복사해서 붙여넣기
+update 테이블 명
+set 컬럼명 = 값, 컬럼 = 값
+where deptno =20
+
+-- where 필수
+delete from 테이블명
+where deptno =20
+-- ****************** DML 언어 끝!!!! *******************
+
+-- ****************** DDl 언어 시작 !!*******************
+create table emp3
+(
+-- 숫자 , 가변 글자, 글자, 날짜   
+    number, varchar2(100), text(100), date
+    emp3_id number primary key, 
+    primary key (id, name)
+)
+
+
+
+-- commit
 select * from tab;
