@@ -173,7 +173,7 @@ from(select rownum as rnum, ename, sal
 from(select ename, sal from emp
     where deptno = 30
     order by sal desc))
-where rnum <=3;
+where rnum <=5;
 
 -- join 
 select * from emp;
@@ -201,11 +201,26 @@ left outer join emp2 e2 on(e1.mgr = e2.empno);
 -- 교집합 부분도 제외할 수 있는가? -- 공부하기.
 -- 댓글 트리 구조 무한정 생성 가능 tree구조로 깊이를 구축 가능
 -- 댓글 1개 ~ 댓글 무한 루프 가능 : 재귀호출 사용함
-select e1.empno, e1.ename, e2.empno, e2.ename, e3.empno, e3.ename
+-- 추가 ++ e1.job / e2.job / e3.job 추가함
+-- ** 두 개 또는 그 이상의 테이블에서 공통된 컬럼이 존재할 때, 그 값을 출력할 때 사용.
+select e1.empno, e1.ename, e1.job, e2.empno, e2.ename, e2.job, e3.empno, e3.ename, e3.job
 from emp e1
 left outer join emp2 e2 on(e1.mgr = e2.empno)
 left outer join emp e3 on(e2.mgr = e3.empno)
+--left outer join emp e1 on(e1.job = e2.job) -- emp에서 e2.job 출력 -- 행이 증가함
+--left outer join emp e3 on(e2.job = e3.job)  -- emp에서 e3.job 출력  -- 행이 증가함
 where e1.empno = 7654;
+
+
+-- scott의 mgr 출력하기
+select e1.empno, e1.ename, e1.job, e2.empno, e2.ename, e2.job, e3.empno, e3.ename, e3.job
+from emp e1
+left outer join emp2 e2 on(e1.mgr = e2.empno)
+left outer join emp e3 on(e2.mgr = e3.empno)
+--left outer join emp e1 on(e1.job = e2.job) -- emp에서 e2.job 출력 -- 행이 증가함
+--left outer join emp e3 on(e2.job = e3.job)  -- emp에서 e3.job 출력  -- 행이 증가함
+where e1.empno = 7788;
+
 
 -- 재귀호출
 --with as lower select * from emp where sal < 2000;
