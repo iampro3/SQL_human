@@ -1,4 +1,6 @@
-select * from emp;
+-- scott3_1 ~ 20 에서 ID 사용 가능함!  
+ 
+ select * from emp;
 
 select * from emp
 order by empno desc, hiredate asc
@@ -88,7 +90,7 @@ select count(ename)from emp;
 -- 다른 표현
 select count(*)from emp;
 
--- 04/17 case 문
+-- ************* 04/17 case 문 ****************
 select sal,
 -- switch 문 처럼 사용법
 -- case ~ when, then ~ end
@@ -195,6 +197,8 @@ from emp e1
 left outer join emp2 e2 on(e1.mgr = e2.empno);
 
 -- ****************** 매우 중요 ********************
+-- left outer join
+-- 교집합 부분도 제외할 수 있는가? -- 공부하기.
 -- 댓글 트리 구조 무한정 생성 가능 tree구조로 깊이를 구축 가능
 -- 댓글 1개 ~ 댓글 무한 루프 가능 : 재귀호출 사용함
 select e1.empno, e1.ename, e2.empno, e2.ename, e3.empno, e3.ename
@@ -223,16 +227,70 @@ delete from 테이블명
 where deptno =20
 -- ****************** DML 언어 끝!!!! *******************
 
+
+
+
 -- ****************** DDl 언어 시작 !!*******************
 create table emp3
 (
 -- 숫자 , 가변 글자, 글자, 날짜   
-    number, varchar2(100), text(100), date
+    number(자릿 수:10), varchar2(100), text(100), date
+    join_date date default sysdate 
     emp3_id number primary key, 
     primary key (id, name)
 )
 
+-- 제약조건을 주는 것이다.
+1. primary key
+2. foreign key : 다른 테이블에 있는 키를 사용
+3. not null 
+4. default
 
+select sysdate from dual;
+
+-- 테이블 수정
+alter table emp2
+-- 컬럼 추가
+add join_date date default sysdate
+-- 컬럼 수정
+modify join_date varchar()
+-- 컬럼 삭제
+drop column join_date
+
+
+-- 테이블 삭제
+drop table emp2
+
+-- 테이블 내용만 전체 삭제
+delete from emp2 -- DML : rallback 가능
+TRUNCATE emp2    -- DDL : 삭제 속도 빠름
+
+-- sequence 
+create sequence seq_emp_cks
+start with 10000;   -- 생략 가능:1부터 시작함
+
+select seq_emp_cks.nextval from dual;
+
+-- 생성 후에 nextval이 최소 한 번은 호출해야 생성 가능함
+select seq_emp_cks.currval from dual; 
+
+insert into emp(empno, ename)
+values(seq_emp_cks.nextval, '조경선');
+
+-- ****************** index 매우 중요 !!! ************************
+-- index : 미리정렬 / 색인이다.
+-- where 나 order by에서 활용
+create index idx_emp
+on emp(empno desc);
+
+-- plan : index를 사용하고 있는 지, 확인한다. 
+-- 실행계획까지 확인 가능
+select * from emp
+order by empno;
+
+-- DB 구조를 알면 서비스를 만들 수 있다.
+-- 프로시저
+-- 트리거 
 
 -- commit
 select * from tab;
