@@ -5,7 +5,7 @@
 -- C## 없이 계정 생성
 ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE;
 -- CREATE USER 계정명 IDENTIFIED BY 비밀번호;
-CREATE USER HR IDENTIFIED BY "1234567";
+CREATE USER HR IDENTIFIED BY "123456";
 -- 계정이 사용할 수 있는 용량 설정(무한대)
 ALTER USER HR QUOTA UNLIMITED ON users;
 -- 계정에 권한 부여
@@ -30,6 +30,7 @@ DROP USER HR CASCADE;
 -- 3 temp [temp tablespace]
 -- 4 [log 경로]
 -- C:\KS\WINDOWS.X64_193000_db_home\demo\schema\log
+-- C:\ks\setup\WINDOWS.X64_193000_db_home\demo\schema\human_resources
 -------------------
 
 -- 2. 테이블 EMPLOYEES의 테이블 구조를 조회하는 SQL문을 작성하시오
@@ -1075,8 +1076,8 @@ GRANT DBA TO human2;
 -- 1. 하기 명령 을 cmd 에 입력한다
 -- revoke -> alter set ~ 실행 -> drop 실행 -> database에서 human 삭제. -> human 2 생성 코드 실행 -> cmd 에 imp명령 실행 -> 
 
-/*
-imp userid=system/123456 file=c:\KS\sql\SQL_human\community.dmp fromuser=human touser=human 
+/* cmd 에 입력하기 - 0430 재설치 후, 실행함
+imp userid=system/123456 file=C:\ks\SQL_human\SQL_human\community.dmp fromuser=human touser=human 
 */
 -- import 중이라고 나온다.
 -- 2. 하기 명령 을 cmd 에 입력한다.
@@ -1084,6 +1085,9 @@ imp userid=system/123456 file=c:\KS\sql\SQL_human\community.dmp fromuser=human t
 imp userid=system/123456 file=c:\KS\sql\sql\SQL_human\community.dmp fromuser=human touser=human 
 
 imp userid=system/123456 file=c:\KS\sql\SQL_human\human.dmp fromuser=human touser=human2 
+
+0430 재실행
+imp userid=system/123456 file=C:\ks\SQL_human\SQL_human\human.dmp fromuser=human touser=human2 
 */
 -- import 중이라고 나온다.
 -- system 권한이 없다고 나온다.
@@ -1132,6 +1136,9 @@ DROP USER human2 CASCADE;
 -- human 계정이 소유하고 있는 데이터를 
 -- "human_exp.dmp"파일로 export하는 명령어를 작성하시오. 
 exp userid=human/123456 file=c:\KS\sql\sql\sql_human\human_exp.dmp log=c:\KS\sql\sql\sql_human\human_exp.log 
+
+-- exp userid=human/123456 file=C:\ks\SQL_human\SQL_human\human_exp.dmp log=C:\ks\SQL_human\SQL_human\human_exp.log 
+
 
 -- 72. 
 -- ms_board 의 writer 속성을 number속성으로 변경
