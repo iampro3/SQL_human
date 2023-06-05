@@ -2615,3 +2615,23 @@ WHERE WRITER LIKE '김휴먼';
 
 -- 0310 테스트 마감
 SELECT * FROM tab;
+
+-- 0605 _ DB 복습 및 프로젝트 연결 공부
+-- EMPLOYEES 테이블 불러오기
+SELECT * FROM EMPLOYEES;
+
+-- DEPARTMENTS 테이블 불러오기
+SELECT * FROM DEPARTMENTS;
+
+
+-- TABLE에서 103 ID 직원의 필요한 COLUMN만 추출하기
+SELECT EMPLOYEE_ID, FIRST_NAME, dept.department_id, dept.department_name
+FROM EMPLOYEES emp, DEPARTMENTS dept
+WHERE emp.department_id = dept.department_id
+AND EMPLOYEE_ID = 103
+
+-- EMPLOYEES 테이블에서 DEPARTMENT_ID 가 80번인 직원들 추출하기
+SELECT *
+FROM EMPLOYEES emp, DEPARTMENTS dept
+WHERE emp.department_id = dept.department_id
+AND emp.department_id =80
