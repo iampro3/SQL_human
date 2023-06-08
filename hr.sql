@@ -2635,3 +2635,173 @@ SELECT *
 FROM EMPLOYEES emp, DEPARTMENTS dept
 WHERE emp.department_id = dept.department_id
 AND emp.department_id =80
+
+-- ****** project용 유 DB 작업 *****************************************************
+-- 0607 scott2_6연결
+SELECT * 
+FROM EMP;
+
+-- test
+select * from emp2;
+
+select * from emp2
+where sal > 3000;
+
+delete from emp2
+where sal >3000;
+
+truncate emp2;
+
+SELECT * 
+FROM EMP_2;
+
+SELECT * 
+FROM myuser;
+
+CREATE TABLE myuser (
+    id varchar2(10) PRIMARY KEY,
+    name varchar2(10) NOT NULL    
+);
+
+CREATE TABLE question_type (
+    type_id number(2) PRIMARY KEY,
+    type varchar2(10) NULL    
+);
+
+INSERT INTO myuser (id, name)
+VALUES ('test1','홍길동1');
+
+INSERT INTO myuser (id, name)
+VALUES ('test2','홍길동2');
+
+INSERT INTO myuser (id, name)
+VALUES ('test3','홍길동3');
+
+SELECT * FROM myuser;
+
+-- sequence 에 대하여
+-- sequence만들기 : 10000번째부터
+CREATE SEQUENCE seq_question_type
+START WITH 10000;
+
+SELECT * FROM user_SEQUENCEs;
+
+-- FROM dual
+-- 0시를 기준으로 영국시간 기준으로 알려준다.
+SELECT sysdate FROM dual;
+SELECT seq_question_type.nextval FROM dual;
+
+-- 다시 생성 
+-- 1번쨰 실행
+CREATE TABLE question_type (
+    type_id number(2) PRIMARY KEY,
+    type varchar2(10) NULL    
+);
+
+-- 안 되면 지울 떄 사용
+-- drop 하기 - 만개 안 됨 : 테이블 지우고 다시 할 것
+drop SEQUENCE seq_question_type;
+
+-- 2번쨰 실행
+CREATE SEQUENCE seq_question_type
+START WITH 1;
+
+SELECT seq_question_type.nextval FROM dual;
+
+-- 3번쨰 실행
+-- 테이블에 행 데이터 insert 하기 
+INSERT INTO question_type (type_id, type)
+values (seq_question_type.nextval, '선택')
+
+INSERT INTO question_type (type_id, type)
+values (seq_question_type.nextval, '객관식')
+
+INSERT INTO question_type (type_id, type)
+values (seq_question_type.nextval, '주관식')
+
+SELECT * FROM question_type;
+
+-- 테이블에서 한 행 데이터 지우기
+delete from question_type where type_id=4;
+
+-- 테이블 내림차순 정렬하기
+SELECT * FROM question_type
+order by type_id desc;
+
+-- 테이블 오름차순 정렬하기
+SELECT * FROM question_type
+order by type_id asc;
+
+-- ************* index **************
+-- full 이 나오면 무조건 index를 해 준다.
+-- index : 모든 테이블에서 데이터를 찾는 것이 불편하니
+-- index로 찾는다. 
+-- 모두 찾으면 검색할 때, 느리기 때문에 index로 데이터를 관리해주는 것이다.
+-- type_id = 2인 데이터를 찾으라.
+SELECT * FROM question_type
+where type_id = 2;
+
+-- type = '객관식'인 데이터를 찾으라.
+-- 계획설명(상단 삼각형 툴에서 3번째.)에서 full 이 발생할 테이블 : index를 만들어서 관리해준다. 
+-- 하기 명령
+-- CREATE INDEX idx_question_type_type
+-- ON question_type(type);
+SELECT * FROM question_type
+where type = '선택';
+
+-- hint를 줄 수 있다.
+SELECT /*hint:idx */ FROM question_type
+where type = '선택';
+
+-- 계획설명 : options-full이 나온다.
+SELECT * FROM question_type;
+
+-- index를 '선택'의 행에 만들어준다.
+CREATE INDEX idx_question_type_type
+ON question_type(type);
+
+-- index 추가해준 후, '계획설명창에서' indexing이 되었는지 확인하기.
+-- 모든 테이블의 user indexes를 추출하라.
+SELECT * FROM user_indexes;
+
+-- 지우기
+DELETE INDEX idx_question_type_type_desc
+ON question_type(TYPE desc)
+
+commit 
+
+-- mypro 권한 설정하기
+CREATE USER mypro IDENTIFIED BY "123456";
+-- 계정이 사용할 수 있는 용량 설정(무한대)
+ALTER USER mypro QUOTA UNLIMITED ON users;
+-- 계정에 권한 부여
+GRANT connect, resource TO mypro;
+
+-- mybatis : sts에서 프로젝트 만들기
+
+-- sts 구문 확인하기
+select id, name from myuser;
+
+-- **********************************************
+-- 0608 EX16_mbatis_SimpleBBS.java
+-- 게시판 작업하기.
+create table simple_bbs(
+id number (4)primary key,
+writer varchar2(100),
+title varchar2(100),
+content varchar2(100)
+);
+
+create sequence simple_bbs_seq;
+
+select * from simple_bbs;
+
+-- 다음 시퀀스 값을 가져올 때
+select simple_bbs_seq.nextval from dual;
+
+-- 현재 시퀀스 값 가져올 때
+-- nextval을 먼저 실행해야 한다.
+-- 카운팅 하는 방법
+-- id 실행할 때 많이 쓴다.
+-- 중간에 id를 한 줄 삭제했을 때 실행해본다.
+select simple_bbs_seq.currtval from dual;
