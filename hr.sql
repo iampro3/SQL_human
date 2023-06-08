@@ -2805,3 +2805,8 @@ select simple_bbs_seq.nextval from dual;
 -- id 실행할 때 많이 쓴다.
 -- 중간에 id를 한 줄 삭제했을 때 실행해본다.
 select simple_bbs_seq.currtval from dual;
+
+-- springboot에서 게시판 작성하고
+-- writeForm에서 글 작성한 후에
+-- sql에서 게시판 내용 검색하기 
+select * from simple_bbs order by id desc;
