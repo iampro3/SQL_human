@@ -2810,3 +2810,26 @@ select simple_bbs_seq.currtval from dual;
 -- writeForm에서 글 작성한 후에
 -- sql에서 게시판 내용 검색하기 
 select * from simple_bbs order by id desc;
+
+-- 0609
+select * from simple_bbs
+where id =25;
+
+select * from simple_bbs where title = '' or id=25;
+
+select * from tb_user where id = 'joe' or 'chloe'
+
+select * from simple_bbs where id = '25'
+
+
+select * id+1 from simple_bbs where id = '25'
+
+-- 0609 오전 12시
+CREATE TABLE MYUSER ("ID" VARCHAR2(10), "NAME" VARCHAR2(10));
+
+CREATE TABLE SIMPLE_BBS ("ID" NUMBER(4,0),
+"WRITER" VARCHAR2(100), "TITLE" VARCHAR2(100), 
+"CONTENT" VARCHAR2(100));
+
+
+
