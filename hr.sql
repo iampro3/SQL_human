@@ -2833,3 +2833,23 @@ CREATE TABLE SIMPLE_BBS ("ID" NUMBER(4,0),
 
 
 
+-- 0612 게시판에서 제목이 ''인 글을 검색하기
+-- id가 '' 인 글 검색하기
+
+-- 전체 게시판 테이블 검색
+select * from simple_bbs
+			
+            order by
+			id desc;
+            
+-- 게시판에서 제목이 ''인 글을 검색하기            
+select * 
+		from 
+			simple_bbs
+			where
+			title = '일요일입니다.'
+            order by
+			id desc;
+
+-- 게시판에서 id가 ''인 글을 검색하기 
+-- or 조건
