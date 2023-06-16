@@ -2821,7 +2821,6 @@ select * from tb_user where id = 'joe' or 'chloe'
 
 select * from simple_bbs where id = '25'
 
-
 select * id+1 from simple_bbs where id = '25'
 
 -- 0609 오전 12시
@@ -2853,3 +2852,114 @@ select *
 
 -- 게시판에서 id가 ''인 글을 검색하기 
 -- or 조건
+
+
+-- 0616 update/ rollback
+
+CREATE TABLE tb_user (
+   user_id   number(10)      NOT NULL,
+   id   varchar2(30)      NULL,
+   pw   varchar2(100)      NULL,
+   name   varchar2(100)      NULL,
+   join_date   date      default sysdate
+);
+
+CREATE TABLE tb_todo (
+   todo_id   number(10)      NOT NULL,
+   todo   varchar2(4000)      NULL,
+   due_date   date      NULL,
+   done_date   date      NULL,
+   user_id   number(10)      NOT NULL
+);
+
+ALTER TABLE tb_user add PRIMARY KEY (user_id);
+
+ALTER TABLE tb_todo ADD CONSTRAINT PK_TODO PRIMARY KEY (
+   todo_id
+);
+
+ALTER TABLE tb_todo add FOREIGN KEY (user_id) REFERENCES tb_user (user_id);
+
+create sequence seq_tb_user;
+
+select * from tb_user;
+select * from tb_todo;
+
+-- update 하기
+-- select 문 먼저 실행하기.
+select 
+			user_id, 
+			id, 
+			pw, 
+			name, 
+			join_date
+		from 
+			tb_user;
+            
+-- where로 id 추가해서 select 문 조회하기
+   select 
+			user_id, 
+			id, 
+			pw, 
+			name, 
+			join_date
+		from 
+			tb_user;         
+        where 
+            user_id=1;
+      
+-- update문 tb테이블 전체 이름 chloe로 업데이트하기            
+update tb_user
+set name = 'chloe'
+
+update tb_user
+set name = 'Anji'
+where
+ user_id = '4'
+
+-- rollback
+update tb_user
+set name = '클로이'
+where
+rollback
+
+--  id 3행만  변경
+update tb_user
+set name = 'yosuah'
+where
+ user_id = '4'
+ 
+-- login에서 화면이 돌아가고 있을 때, 반드시commit 해야 한다. 
+commit
+
+-- delete 결과 테이블에서 확인하기
+-- 웹창에서 delete한다.
+select * from tb_user
+
+-- pw 1234 출력
+select * from tb_user
+where id='admin' and pw='1234';
+
+-- count 로 출력
+-- login할 때 count 방식으로 할 것이다.
+select count(*) from tb_user
+where id='admin' and pw='1234';
+
+-- id 12로 들어가기 출력 -->없는 id
+select count(*) from tb_user
+where id='12' and pw='1234';
+
+select count(*) from tb_user
+where id='12';
+
+-- todo 테이블 만들기
+select * from tb_todo;
+
+-- sequence
+create sequence seq_todo;
+
+-- delete 하기
+delete 
+	tb_todo
+where
+    todo_id = '3';
