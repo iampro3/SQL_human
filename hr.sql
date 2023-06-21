@@ -2952,8 +2952,10 @@ where id='12' and pw='1234';
 select count(*) from tb_user
 where id='12';
 
--- todo 테이블 만들기
+-- todo 테이블 추출하기
+-- id 1인 내용 추출
 select * from tb_todo;
+where todo_id =1;
 
 -- sequence
 create sequence seq_todo;
@@ -2963,3 +2965,192 @@ delete
 	tb_todo
 where
     todo_id = '3';
+    
+-- ************** 0619 ****************
+
+-- todo 테이블 추출하기
+select * from tb_todo;
+
+-- id 1인 내용 추출
+select * from tb_todo
+where todo_id = 6;
+
+-- todo_id 가 4, todo 제목이 test 인 행을 update 하라
+update tb_todo
+set 
+    todo = 'test',
+    due_date='2023-06-19'
+    where
+        todo_id = 4;
+
+-- done date 확인하기
+-- sts 에서 list.add에서 체크하면 done date가 설정 되고
+-- sql 에서 아래 를 확인해 보면 done date가 설정되었따.
+select * from tb_todo;
+
+-- done date 초기화, 아무것도 안 된 상태로 다시 만들기
+-- 꼭 commit; 해야 list.do 파일이 초기화 됨
+update tb_todo
+set    
+    done_date= null;
+
+commit;    
+
+-- 0619 오후
+
+select e1.ename, e1.empno, e1.mgr, 
+        e2.ename, e2.empno
+from
+    emp e1, emp e2
+where
+    e1.mgr = e2.empno;
+
+
+select e1.ename, e1.empno, e1.mgr, 
+        e2.ename, e2.empno
+from
+    emp e1
+    left outer join emp e2 on ( e1.mgr = e2.empno);
+    
+    
+-- ************** 0620 ********************
+-- transaction 생성
+create table transaction1 (
+    consumerid varchar2(20),
+    amount number
+);
+create table transaction2 (
+    consumerid varchar2(20),
+    amount number
+);
+create table transaction3 (
+    consumerid varchar2(20),
+    amount number
+);
+
+-- 삽입
+insert into transaction1
+values ('1', 100);
+
+-- 삽입 후 조회(삽입한 내용 확인 가능)
+select * from transaction1;
+
+
+-- 되돌리기
+rollback;
+
+-- 조회 : 없어짐
+select * from transaction1;
+
+-- 다시 삽입
+insert into transaction1
+values ('1', 100);
+
+-- 확정
+commit;
+
+select * from transaction1;
+
+-- 되돌리기
+rollback;
+
+-- 확정 된 내용 조회 됨
+select * from transaction1;    
+
+--  transaction2, 3 삽입
+insert into transaction2
+values ('1', 100);
+
+insert into transaction3
+values ('1', 100);
+
+select * from transaction1;
+
+select * from transaction2;
+
+select * from transaction3;
+
+-- 0621 페이징하기
+-- 1~100까지 모두 한 페이지에 스크롤해서
+-- 보이기 어려우니,
+-- 1~10, 11~20.... 으로
+-- 나눠서 보여줄 수 있다.
+-- rownum
+select * from tb_todo;
+
+
+select rownum,  
+    tb_todo.*
+ from tb_todo;
+ 
+-- rownum as rnum 으로 해야만 
+-- 3번이 추출된다.
+ select *
+ from
+ (
+ select rownum as rnum,  
+    tb_todo.*
+ from tb_todo
+ )
+ where
+     rnum = 3;
+     
+-- 1. 11~20번 까지 추출     
+select *
+from
+ (
+ select rownum as rnum,  
+    tb_todo.*
+ from tb_todo
+ )
+ where
+     rnum >= 11 and rnum <=20;
+ 
+-- 2. 11~20번 까지 추출 : 오라클 전용방식
+-- between : 다른 sql에서는 구동 안 됨  
+-- rnum between 11 and 20
+select *
+from
+ (
+ select rownum as rnum,  
+    tb_todo.*
+ from tb_todo
+ )
+ where
+rnum between 11 and 20;
+
+-- total 페이지를 count 하기
+-- count(*)
+select 
+    count(*)
+from
+    tb_todo;
+    
+-- total 에서 한 페이지 당 10개씩 보여주기
+select 606/10 from dual
+
+-- 올림처리
+select ceil(606/10) from dual
+-- 내림처리
+select floor(606/10) from dual
+
+-- 반올림
+select round(606/10) from dual
+
+-- 11~20 추출하기
+select *
+from
+ (
+ select rownum as rnum,
+	       todo_id,
+	        todo,
+	        due_date,
+	        done_date,
+	        u.user_id,
+	        u.name
+	    from
+	        tb_todo t
+	        left outer join tb_user u on(u.user_id = t.user_id)
+ )
+ where
+     rnum >= 11 and rnum <=20;
