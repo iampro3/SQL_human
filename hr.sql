@@ -2928,6 +2928,13 @@ update tb_user
 set name = 'yosuah'
 where
  user_id = '4'
+
+-- 0622 학원에서 실행하기 
+--  pw id 4만  변경
+update tb_user
+set pw = '0000'
+where
+ user_id = '23'
  
 -- login에서 화면이 돌아가고 있을 때, 반드시commit 해야 한다. 
 commit
@@ -3154,3 +3161,12 @@ from
  )
  where
      rnum >= 11 and rnum <=20;
+     
+--      
+update tb_user
+set name = 'Celine'
+where
+ user_id = '9'
+ 
+select *
+from tb_user;
