@@ -2882,6 +2882,8 @@ ALTER TABLE tb_todo add FOREIGN KEY (user_id) REFERENCES tb_user (user_id);
 
 create sequence seq_tb_user;
 
+create sequence seq_tb_todo;
+
 select * from tb_user;
 select * from tb_todo;
 
@@ -2965,7 +2967,7 @@ select * from tb_todo;
 where todo_id =1;
 
 -- sequence
-create sequence seq_todo;
+create sequence seq_tb_todo;
 
 -- delete 하기
 delete 
@@ -3170,3 +3172,26 @@ where
  
 select *
 from tb_user;
+
+select *
+from tb_todo;
+
+-- 0623
+-- 무결성 제약조건 외래키를 삭제하라
+SELECT 
+	CONSTRAINT_NAME
+    ,CONSTRAINT_TYPE
+    , TABLE_NAME
+    ,R_CONSTRAINT_NAME  
+FROM USER_CONSTRAINTS 
+WHERE TABLE_NAME = 'TB_USER';
+
+SELECT 
+	CONSTRAINT_NAME
+    ,CONSTRAINT_TYPE
+    , TABLE_NAME
+    ,R_CONSTRAINT_NAME  
+FROM USER_CONSTRAINTS 
+WHERE TABLE_NAME = 'TB_TODO';
+
+ALTER TABLE TB_TODO DROP CONSTRAINT SYS_C007830;
