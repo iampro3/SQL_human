@@ -3237,3 +3237,448 @@ PARENT_ID2 NUMBER(4,0) );
 
 SELECT * FROM USER_SEQUENCES:
 SELECT * FROM SIMPLE_BBS_SEQ:
+
+-- 0619
+SELECT *
+		FROM  (
+		   SELECT rownum AS rnum,
+		          todo_id,
+		          todo,
+		          due_date,
+		          done_date,
+		          u.user_id,
+		          u.name
+		   FROM tb_todo t
+		   LEFT OUTER JOIN tb_user u on(u.user_id = t.user_id);
+            
+select rownum,  
+    tb_todo.*
+ from tb_todo;
+ 
+-- rownum as rnum 으로 해야만 
+-- 3번이 추출된다.
+ select *
+ from
+ (
+ select rownum as rnum,  
+    tb_todo.*
+ from tb_todo
+ )
+ where
+     rnum = 3;
+     
+-- 1. 11~20번 까지 추출     
+select *
+from
+ (
+ select rownum as rnum,  
+    tb_todo.*
+ from tb_todo
+ )
+ where
+     rnum >= 11 and rnum <=20;
+ 
+-- 2. 11~20번 까지 추출 : 오라클 전용방식
+-- between : 다른 sql에서는 구동 안 됨  
+-- rnum between 11 and 20
+select *
+from
+ (
+ select rownum as rnum,  
+    tb_todo.*
+ from tb_todo
+ )
+ where
+rnum between 11 and 20;
+
+-- total 페이지를 count 하기
+-- count(*)
+select 
+    count(*)
+from
+    tb_todo;
+    
+-- total 에서 한 페이지 당 10개씩 보여주기
+select 606/10 from dual
+
+-- 올림처리
+select ceil(606/10) from dual
+-- 내림처리
+select floor(606/10) from dual
+
+-- 반올림
+select round(606/10) from dual
+
+-- 11~20 추출하기
+select *
+from
+ (
+ select rownum as rnum,
+	       todo_id,
+	        todo,
+	        due_date,
+	        done_date,
+	        u.user_id,
+	        u.name
+	    from
+	        tb_todo t
+	        left outer join tb_user u on(u.user_id = t.user_id)
+ )
+ where
+     rnum >= 11 and rnum <=20;
+     
+select 
+    count(*)
+from
+    tb_todo;
+    
+    
+	insert into tb_todo (
+			todo_id,
+			todo,
+			due_date,
+			user_id
+		) values (
+			seq_todo.nextval,
+			todo,
+			due_date,
+			user_id
+		);  
+
+--     
+INSERT INTO tb_todo (
+  todo_id,
+  todo,
+  due_date,
+  user_id
+) VALUES (
+  seq_todo.nextval,
+  'My new todo',
+  '2023-06-23',
+  1
+);
+        
+-- update tb_user
+update tb_user
+set name = 'Anji'
+where
+ user_id = '3'
+ 
+select * from tb_user
+select * from tb_todo
+
+--  id 3행만  변경
+update tb_user
+set name = 'mine'
+where
+ user_id = '2'
+ 
+--
+update tb_todo
+set User_id = 'chloe'
+commit;
+ 
+ 
+-- ************0623 SIMPLE_BBS 테이블 SEQUENCE 생성 및 ****************
+-- 부모 글의자식글들, 댓글의 댓글등 생성하기
+CREATE TABLE SIMPLE_BBS (ID NUMBER(4, 0) primary key,
+                        WRITER VARCHAR2(100),
+                        TITLE VARCHAR2(100),
+                        CONTENT VARCHAR2(100),
+                        PARENT_ID2 NUMBER(4, 0));
+
+
+create sequence SIMPLE_BBS_SEQ;
+-- 
+alter table simple_bbs
+drop column parent_id2;
+
+-- 1.
+alter table simple_bbs
+add parent_id number(4);
+
+-- 2.
+select * from SIMPLE_BBS
+order by id desc;
+
+-- 3. 64번 id에 61번 글의 자식으로 만들기
+update SIMPLE_BBS 
+set parent_id = 24
+where id = 23;
+
+-- 4. SIMPLE BBS1/BBS2 테이블 생성하기
+select *
+from SIMPLE_BBS bbs1, SIMPLE_BBS bbs2
+WHERE bbs1.id = bbs2.id; 
+
+-- 오류남
+select *
+from SIMPLE_BBS bbs1, SIMPLE_BBS bbs2
+WHERE bbs1.parent_id = bbs2._id;
+
+-- 댓글+대댓글로 조회하기
+-- 5. 좌측이 부모 글 ID이고 우측이 자식 글 ID들을 정렬해라. + BBS3 의 부모 테이블 BBS2도 정렬해라.
+-- LEFT OUT JOIN
+-- 매칭없는 글들은 NULL
+select * 
+from SIMPLE_BBS bbs1
+LEFT OUTER JOIN SIMPLE_BBS bbs2 ON (bbs1.parent_id = bbs2.id)
+LEFT OUTER JOIN SIMPLE_BBS bbs3 ON (bbs2.parent_id = bbs3.id);
+
+-- 5.1 재귀호출 + 대댓글 연결해주기
+-- 부모글 지정 : START WITH parent_id is null
+-- connect prior id = parent_id 로 정렬하여 조회해라.
+-- desc로 정렬하기
+select * 
+from SIMPLE_BBS 
+START WITH parent_id is null
+connect by prior id = parent_id
+order by id asc;
+
+-- 5.2 siblings으로 정렬해주기
+select * 
+from SIMPLE_BBS 
+START WITH parent_id is null
+connect by prior id = parent_id
+order siblings by id desc;
+
+-- 6. level은 글의 깊이가 보인다.
+-- order siblings by id desc
+select level, SIMPLE_BBS.*
+from SIMPLE_BBS 
+START WITH parent_id is null
+connect by prior id = parent_id
+order siblings by id desc;
+
+-- union all : 위와 아래 테이블을 합쳐준다.
+-- >= 이상 은 즉 같거나 크다. !! 중요
+select * from SIMPLE_BBS
+where id >= 10
+union all
+select * from SIMPLE_BBS
+where id < 50;
+-- 여기까지 oracle만 있음
+
+-- with
+-- 자동으로 닫아준다.
+with w1 as (
+    select * from SIMPLE_BBS
+where id < 50
+)
+select * from w1;
+-- 위처럼 'with w1'로 SIMPLE_BBS테이블을 불러올 수 있다.
+-- union all 앞은 bbs1 테이블, 뒤는 bbs2 테이블
+-- lpad(' | ', r.lv ,' | ')로 댓글, 대댓글 정렬하기.
+-- lv : 임의로 level 을 보여주는 것을 내가 임의로 약칭함
+-- bbs_recu r : 임의로 bbs_recursive를 r 로 약칭함
+-- paging도 todo 에 적용하기.
+with bbs_recu (lv, id, writer, title, content, parent_id) as (
+    select  
+        1 as lv,
+        id, writer, title, content, parent_id
+    from 
+        simple_bbs
+    where 
+        parent_id is null
+    
+    union all
+    
+    select
+        r.lv + 1 as lv,
+        bbs.id, bbs.writer, 
+        lpad(' | ', r.lv ,' | ') || bbs.title, 
+        bbs.content, bbs.parent_id
+    from bbs_recu r
+    left outer join simple_bbs bbs on bbs.parent_id = r.id
+    where bbs.parent_id is not null
+)
+search depth first by (id) set sort_id
+select * from bbs_recu
+order by sort_id;
+
+-- emp table로 테스트해볼 것
+
+-- ''를 3 자리로 모두 채울 것이다.
+-- lpad : 정렬 또는 자리를 채워준다.
+select lpad('a',3,'*') from dual;
+
+-- ************* question *************
+-- tb_user/tb_todo 시퀀스 재생성
+-- 시퀀스 생성 시, 테이블 명 뒤에 _seq 붙이기
+create sequence tb_user_SEQ;
+create sequence tb_todo_SEQ;
+
+select * from tb_todo;
+select * from tb_user;
+
+select tb_user_seq.nextval from dual;
+select tb_todo_seq.nextval from dual;
+
+-- sequences 로 시퀀스 생성되었는지 검사하기.
+select * from user_sequences;
+select * from seq_tb_todo;
+
+
+-- ******************departments table로 댓글+대댓글 실험함**************************
+-- departments table로 테스트 함 
+-- todo 테이블 조회하기
+select * from tb_todo;
+
+-- emp table로 테스트해볼 것
+select * from departments;
+
+alter table departments
+add parent_id number(4);
+
+select * from departments order by department_id asc;
+
+-- department_id를 자식으로 만들기 
+update departments 
+set parent_id = 10
+where department_id = 110;
+
+-- 테이블 2개 만들기 --> 필요한가?
+select * from departments dts2, departments dts3
+where dts2.department_id = dts3.department_id;
+
+-- 댓글 만들기
+-- left outer join 으로 정렬하라
+select * 
+from departments dts1
+left outer join departments dts2 on (dts1.parent_id = dts2.department_id) 
+left outer join departments dts3 on (dts2.parent_id = dts3.department_id); 
+
+-- 재귀호출로 댓글 연결해주기.
+-- siblings 으로 정렬해주기 : 댓글 +대댓글 연합들로 묶어준다.
+
+select level, departments.*
+from departments
+start with parent_id is null
+connect by prior department_id = parent_id
+order siblings by department_id asc;
+
+-- union all 로 부모+댓글들을 묶어준다.
+select *
+from departments
+where department_id >= 10
+union all 
+select *
+from departments
+where department_id < 90;
+
+-- with w1: 자동으로 닫아준다.
+with d1 as (
+    select *
+    from departments 
+where department_id <40    
+)
+select * from d1;
+
+-- with구문으로 부모글+댓글 연결해주기
+-- lpad(' | ', d.lv ,' | ') 부분을 합칠 때, 숫자는 안 됨
+with dts_recu (lv, department_id, DEPARTMENT_NAME, MANAGER_ID, LOCATION_ID, PARENT_ID) as (
+    select  
+        1 as lv,
+        department_id, DEPARTMENT_NAME, MANAGER_ID, LOCATION_ID, PARENT_ID
+    from 
+        departments
+    where 
+        parent_id is null
+    
+    union all
+        
+    select
+        d.lv + 1 as lv,
+        dts.department_id, 
+        lpad(' + ', d.lv ,' + ') || dts.DEPARTMENT_NAME, 
+        dts.MANAGER_ID, 
+        dts.LOCATION_ID, dts.PARENT_ID
+    from dts_recu d
+    left outer join DEPARTMENTS dts on dts.parent_id = d.DEPARTMENT_id
+    where dts.parent_id is not null
+)
+search depth first by (DEPARTMENT_id) set sort_id
+select * from dts_recu
+order by sort_id;
+
+-- lpad ('들어갈 문자.', 매칭 숫자, '앞부터 들어가는 문자/숫자/기호')
+select lpad('0', 4,' +') from dual;
+
+-- *********************todo 테이블 댓글 + 대댓글 조회하기*****************************
+-- departments table로 테스트 함 
+-- todo 테이블 조회하기
+select * from tb_todo;
+
+alter table tb_todo
+add parent_id number(4);
+
+select * from tb_todo order by TODO_ID asc;
+
+-- department_id를 자식으로 만들기 
+update tb_todo 
+set parent_id = 10
+where TODO_ID = 110;
+
+-- 테이블 2개 만들기 --> 필요한가?
+select * from tb_todo td2, tb_todo td3
+where td2.TODO_ID = td3.TODO_ID;
+
+-- 댓글 만들기
+-- left outer join 으로 정렬하라
+select * 
+from tb_todo td1
+left outer join tb_todo td2 on (td1.parent_id = td2.TODO_ID) 
+left outer join tb_todo td3 on (td2.parent_id = td3.TODO_ID); 
+
+-- 재귀호출로 댓글 연결해주기.
+-- siblings 으로 정렬해주기 : 댓글 +대댓글 연합들로 묶어준다.
+
+select level, tb_todo.*
+from tb_todo
+start with parent_id is null
+connect by prior TODO_ID = parent_id
+order siblings by TODO_ID asc;
+
+-- union all 로 부모+댓글들을 묶어준다.
+select *
+from tb_todo
+where TODO_ID >= 10
+union all 
+select *
+from tb_todo
+where TODO_ID < 90;
+
+-- with w1: 자동으로 닫아준다.
+with t1 as (
+    select *
+    from tb_todo 
+where TODO_ID <40    
+)
+select * from t1;
+
+-- with구문으로 부모글+댓글 연결해주기
+-- lpad(' | ', d.lv ,' | ') 부분을 합칠 때, 숫자는 안 됨
+with td_recu (lv, TODO_ID, TODO, DUE_DATE, DONE_DATE, USER_ID, PARENT_ID) as (
+    select  
+        1 as lv,
+        TODO_ID, TODO, DUE_DATE, DONE_DATE, USER_ID, PARENT_ID
+    from 
+        tb_todo
+    where 
+        parent_id is null
+    
+    union all
+        
+    select
+        t.lv + 1 as lv,
+        td.TODO_ID, 
+        lpad(' + ', t.lv ,' + ') || td.TODO, 
+        td.DUE_DATE, 
+        td.DONE_DATE, td.USER_ID, td.PARENT_ID
+    from td_recu t
+    left outer join tb_todo td on td.parent_id = t.TODO_ID
+    where td.parent_id is not null
+)
+search depth first by (TODO_ID) set sort_id
+select * from td_recu
+order by sort_id;
