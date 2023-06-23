@@ -3195,3 +3195,45 @@ FROM USER_CONSTRAINTS
 WHERE TABLE_NAME = 'TB_TODO';
 
 ALTER TABLE TB_TODO DROP CONSTRAINT SYS_C007830;
+
+-- select * from simple_bbs
+where writer in ('abcd', 'Abcd', 'abcd')
+
+select lower(writer), upper(writer), writer from simple_bbs
+select upper(writer) = upper('abcd')
+
+-- 1.simple_bbs조회
+select * from simple_bbs
+
+-- 2.simple_bbs조회
+where upper  (writer)  like ('%a%')
+
+-- a와 b를 함께 조회하기
+select 'a' || 'b' from dual
+
+-- 조회
+desc simple_bbs
+
+-- 3.부모 컬럼 추가
+alter table simple_bbs
+add parent_id number(4) default 0
+
+alter table simple_bbs
+add parent_id2 number(4) not null
+
+-- parent_id2 값 삭제
+alter table simple_bbs
+drop column parent_id
+
+-- 4. 부모 컬럼 parent_id2 null 추가
+alter table simple_bbs
+add parent_id2 number(4) null
+
+create table simple_bbs (ID NUMBER(4,0) PRIMARY KEY,
+WRITER VARCHAR2(100),
+TITLE VARCHAR2(100),
+CONTENT VARCHAR2(100),
+PARENT_ID2 NUMBER(4,0) );
+
+SELECT * FROM USER_SEQUENCES:
+SELECT * FROM SIMPLE_BBS_SEQ:
