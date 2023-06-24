@@ -3401,6 +3401,13 @@ add parent_id number(4);
 select * from SIMPLE_BBS
 order by id desc;
 
+-- 2.1 대문자
+select lower(writer), upper(writer), writer from SIMPLE_BBS
+where upper(writer) = upper('abcd');
+
+select * from SIMPLE_BBS
+where upper(writer) like upper('%a%');
+
 -- 3. 64번 id에 61번 글의 자식으로 만들기
 update SIMPLE_BBS 
 set parent_id = 24
@@ -3516,8 +3523,8 @@ select tb_todo_seq.nextval from dual;
 
 -- sequences 로 시퀀스 생성되었는지 검사하기.
 select * from user_sequences;
-select * from seq_tb_todo;
-
+select * from tb_todo_seq;
+select * from tb_user_seq;
 
 -- ******************departments table로 댓글+대댓글 실험함**************************
 -- departments table로 테스트 함 
@@ -3616,8 +3623,8 @@ select * from tb_todo order by TODO_ID asc;
 
 -- department_id를 자식으로 만들기 
 update tb_todo 
-set parent_id = 10
-where TODO_ID = 110;
+set parent_id = 19
+where TODO_ID = 16;
 
 -- 테이블 2개 만들기 --> 필요한가?
 select * from tb_todo td2, tb_todo td3
@@ -3646,7 +3653,7 @@ where TODO_ID >= 10
 union all 
 select *
 from tb_todo
-where TODO_ID < 90;
+where TODO_ID < 30;
 
 -- with w1: 자동으로 닫아준다.
 with t1 as (
