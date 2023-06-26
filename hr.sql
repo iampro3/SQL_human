@@ -3665,27 +3665,9 @@ select * from t1;
 
 -- with구문으로 부모글+댓글 연결해주기
 -- lpad(' | ', d.lv ,' | ') 부분을 합칠 때, 숫자는 안 됨
-with td_recu (lv, TODO_ID, TODO, DUE_DATE, DONE_DATE, USER_ID, PARENT_ID) as (
-    select  
-        1 as lv,
-        TODO_ID, TODO, DUE_DATE, DONE_DATE, USER_ID, PARENT_ID
-    from 
-        tb_todo
-    where 
-        parent_id is null
-    
-    union all
-        
-    select
-        t.lv + 1 as lv,
-        td.TODO_ID, 
-        lpad(' + ', t.lv ,' + ') || td.TODO, 
-        td.DUE_DATE, 
-        td.DONE_DATE, td.USER_ID, td.PARENT_ID
-    from td_recu t
-    left outer join tb_todo td on td.parent_id = t.TODO_ID
-    where td.parent_id is not null
-)
-search depth first by (TODO_ID) set sort_id
-select * from td_recu
-order by sort_id;
+ 
+-- 순서대로 보여줌
+ 
+-- search depth first by (TODO_ID) set sort_id
+-- select * from td_recu
+-- order by sort_id;
