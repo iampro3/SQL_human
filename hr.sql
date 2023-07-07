@@ -3711,3 +3711,15 @@ CREATE USER scott IDENTIFIED BY "tiger";
 ALTER USER scott QUOTA UNLIMITED ON users;
 -- 계정에 권한 부여
 grant connect, resource to scott;
+
+
+
+-- scott 테이블 생성
+create table scott_table(
+   std_id number(10) primary key, 
+   name varchar2(200),
+   address varchar2(100)
+);
+
+insert into scott_tb(
+
