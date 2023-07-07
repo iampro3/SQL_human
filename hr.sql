@@ -3671,3 +3671,43 @@ select * from t1;
 -- search depth first by (TODO_ID) set sort_id
 -- select * from td_recu
 -- order by sort_id;
+
+
+
+-- ******************** 0707 hotplace *********************************
+-- DDL
+create table hotplace(
+ hotplace_id number(5)  primary key,
+     name varchar2(100),
+     addr varchar2(200)
+);
+
+-- 100 번부터 시작한다.
+create sequence seq_hotplace;
+-- start with 100
+-- increment by 10
+
+select * from hotplace;
+
+insert into hotplace (hotplace_id, name, addr)
+values (seq_hotplace.nextval, '콩국수', '콩국수 맛집');
+
+-- update
+update hotplace 
+set addr = '용산역 근처'
+where hotplace_id = 0;
+
+-- delete
+delete hotplace
+where hotplace_id =0;
+
+
+-- 데이터 입력 후, sts에서 실행되기 위해서는 반드시 실행해야 한다.
+commit;
+
+-- scott 권한 설정하기
+CREATE USER scott IDENTIFIED BY "tiger";
+-- 계정이 사용할 수 있는 용량 설정(무한대)
+ALTER USER scott QUOTA UNLIMITED ON users;
+-- 계정에 권한 부여
+grant connect, resource to scott;
